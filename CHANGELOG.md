@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.1.15 (2026-10-17)
+
+### Fixes
+
+- An agent's click answers in about 75 ms instead of about 450 ms. Sidescreen read the full window list twice per click, about 1,900 windows each time; it now reads it once, with CoreFoundation directly, and skips windows that can't be the target.
+
+#### Browsers an agent starts no longer flash on your screen
+
+Sidescreen starts an app hidden so its first window opens out of sight, but Chrome, Firefox and Brave show themselves as they start, so their first window appeared on your screen for up to half a second. Sidescreen now hides such an app again until its window sits on the agent's display.
+
+#### Sidescreen asks AeroSpace far less often
+
+Every command makes AeroSpace refresh all of your windows first, which takes up to two seconds on a busy Mac and stalls AeroSpace meanwhile. Sidescreen asked it on every display change, up to 25 times a minute while agents worked. It now asks once, when the first agent display appears, and not at all when no agent display is online.
+
+#### A new display no longer makes every other display move
+
+When a monitor you unplugged left a gap in macOS's display numbers, every new agent display came out with a number another display had, so Sidescreen made it twice and removed the first. Each of those changes moved all the other displays and could drop their windows on your screen. Sidescreen now keeps that first display, out of the way, until its last display goes, so each new display is one change.
+
+#### launch_app follows an app to its document window
+
+Pages, given a text file, closes the window it opened first and shows the document in another. launch_app kept trying to place the closed one and failed. It now places the app's new window instead.
+
+#### Sidescreen logs when it stops responding
+
+When Sidescreen's main thread, which draws the menu bar icon, Peek and the Viewer, doesn't answer for 150 ms or more, `~/Library/Logs/Sidescreen/displays.log` says so beside the display changes. A stall still going at 300 ms also saves a one-second sample of Sidescreen to that folder, at most once every ten minutes, keeping the last five.
+
+#### A new agent display is one display change instead of two
+
+Sidescreen moved every new display out of the way after macOS added it, and each move is another change every app on the Mac handles. macOS now remembers where each display goes, so the next display with the same slot appears there at once.
+
+#### Peek and the Viewer keep responding while agents make displays and start apps
+
+Parking a new display waited on macOS for 100 ms or more on Sidescreen's main thread, and finding a starting app asked macOS about every running app 50 times a second. Both stalled the menu bar icon, Peek and the Viewer. Display changes now run on a thread of their own, one at a time, and Sidescreen finds a starting app in the process table.
+
+#### Agents' windows stay on their displays while other agents add or end displays
+
+Each display that comes or goes makes macOS move the others, and it could drop their windows on your screen, where AeroSpace tiled them among yours. Sidescreen puts such a window back as soon as the displays settle, and no longer mistakes a display that is moving for its window leaving.
+
 ## 0.1.14 (2026-10-16)
 
 ### Features
